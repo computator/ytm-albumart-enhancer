@@ -3,7 +3,7 @@
 // @name YTM Album Art Enhancer
 // @description Makes YTM show higher resolution album art when possible on the now playing screen
 // @match https://music.youtube.com/*
-// @version 0.1
+// @version 0.1.1
 // ==/UserScript==
 
 class ArtEnhancer {
@@ -162,7 +162,7 @@ class ArtEnhancer {
 	}
 
 	thumbSizeNeeded() {
-		return [this.songThumb.clientWidth * devicePixelRatio, this.songThumb.clientHeight * devicePixelRatio];
+		return [Math.floor(this.songThumb.clientWidth * devicePixelRatio), Math.floor(this.songThumb.clientHeight * devicePixelRatio)];
 	}
 }
 
