@@ -9,8 +9,10 @@
 class ArtEnhancer {
 	constructor(ytmapp) {
 		this.ytm = ytmapp;
-		this.playerNode = this.ytm.querySelector('ytmusic-player');
-		this.songThumb = this.playerNode.querySelector('#song-image #thumbnail');
+
+		this.playerNode = null;
+		this.songThumb = null;
+		this.nodeSearchTries = 20000 / 50;  // 20 seconds worth of 50ms tries
 
 		this.window_resized = this.window_resized.bind(this);
 		this.nodes_changed = this.nodes_changed.bind(this);
@@ -19,11 +21,44 @@ class ArtEnhancer {
 		this.fs_change = this.fs_change.bind(this);
 		this.dpi_change = this.dpi_change.bind(this);
 		this.size_change = this.size_change.bind(this);
+
+		this.findNodes = this.findNodes.bind(this);
 		this.updateImage = this.updateImage.bind(this);
 
 		this.pendingResize = null;
 		this.queuedResizes = 0;
 		this.pendingUpdate = null;
+
+		this.observer = null;
+		this.highDPIQuery = null;
+
+		console.info("Art Enhancer initialized");
+
+		console.debug("finding nodes");
+		this.findNodes();
+	}
+
+	findNodes() {
+		if(this.nodeSearchTries-- <= 0) {
+			console.error("Art Enhancer failed: could not find nodes!");
+			return;
+		}
+		this.playerNode = this.playerNode || this.ytm.querySelector('ytmusic-player');
+		if(!this.playerNode) {
+			setTimeout(this.findNodes, 50);
+			return;
+		}
+		this.songThumb = this.playerNode.querySelector('#song-image #thumbnail');
+		if(!this.songThumb) {
+			setTimeout(this.findNodes, 50);
+			return;
+		}
+		console.debug("nodes found");
+		this.setHooks();
+	}
+
+	setHooks() {
+		console.debug("setting hooks");
 		this.observer = new MutationObserver(this.nodes_changed);
 		this.highDPIQuery = matchMedia('(resolution: 1dppx)');
 
@@ -33,6 +68,7 @@ class ArtEnhancer {
 		window.addEventListener('resize', this.window_resized);
 		document.addEventListener('fullscreenchange', this.fs_change);
 
+		console.debug("hooks set");
 		console.info("Art Enhancer started");
 	}
 
