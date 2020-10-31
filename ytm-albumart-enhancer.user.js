@@ -13,6 +13,8 @@ class ArtEnhancer {
 		this.songThumb = this.playerNode.querySelector('#song-image #thumbnail');
 
 		this.window_resized = this.window_resized.bind(this);
+		this.nodes_changed = this.nodes_changed.bind(this);
+		this.player_load = this.player_load.bind(this);
 		this.thumb_load = this.thumb_load.bind(this);
 		this.dpi_change = this.dpi_change.bind(this);
 		this.size_change = this.size_change.bind(this);
@@ -21,9 +23,10 @@ class ArtEnhancer {
 		this.pendingResize = null;
 		this.queuedResizes = 0;
 		this.pendingUpdate = null;
-		this.observer = new MutationObserver(this.thumb_load);
+		this.observer = new MutationObserver(this.nodes_changed);
 		this.highDPIQuery = matchMedia('(resolution: 1dppx)');
 
+		this.observer.observe(this.playerNode, {attributeFilter: ['playable_']});
 		this.observer.observe(this.songThumb, {attributeFilter: ['loaded']});
 		this.highDPIQuery.addEventListener('change', this.dpi_change);
 		window.addEventListener('resize', this.window_resized);
@@ -35,6 +38,22 @@ class ArtEnhancer {
 		if(!this.pendingResize)
 			this.pendingResize = setInterval(this.size_change, 100);
 		this.queuedResizes++;
+	}
+
+	nodes_changed(changes) {
+		for(let change of changes) {
+			if(change.target == this.playerNode)
+				this.player_load();
+			else if(change.target == this.songThumb)
+				this.thumb_load();
+		}
+	}
+
+	player_load() {
+		if(!this.playerNode.attributes.playable_)
+			return;
+		console.debug("player loaded");
+		this.queueUpdate();
 	}
 
 	thumb_load() {
