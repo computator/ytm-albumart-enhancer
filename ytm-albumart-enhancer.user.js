@@ -41,14 +41,14 @@ class ArtEnhancer {
 		if(!this.songThumb.attributes.loaded)
 			return;
 		console.debug("new thumb");
+		if(this.pendingUpdate)
+			clearTimeout(this.pendingUpdate);
 		this.updateImage();
 	}
 
 	dpi_change() {
 		console.debug("DPI change");
-		if(this.pendingUpdate)
-			clearTimeout(this.pendingUpdate);
-		this.pendingUpdate = setTimeout(this.updateImage, 500);
+		this.queueUpdate();
 	}
 
 	size_change() {
@@ -61,9 +61,7 @@ class ArtEnhancer {
 			this.pendingResize = null;
 		}
 		console.debug("size change");
-		if(this.pendingUpdate)
-			clearTimeout(this.pendingUpdate);
-		this.pendingUpdate = setTimeout(this.updateImage, 500);
+		this.queueUpdate();
 	}
 
 	updateImage() {
@@ -82,6 +80,12 @@ class ArtEnhancer {
 
 		img.src = img.src.replace(/(=[^=]*)?$/, `=w${size[0]}-h${size[1]}-l93-rj`);
 		console.info("thumb updated to resolution %dx%d", size[0], size[1]);
+	}
+
+	queueUpdate() {
+		if(this.pendingUpdate)
+			clearTimeout(this.pendingUpdate);
+		this.pendingUpdate = setTimeout(this.updateImage, 500);
 	}
 
 	thumbSizeNeeded() {
