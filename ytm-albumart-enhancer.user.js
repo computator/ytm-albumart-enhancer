@@ -87,16 +87,19 @@ class ArtEnhancer {
 		this.pendingUpdate = null;
 
 		let img = this.songThumb.querySelector('img#img');
-		if(/^https:\/\/[^/]*\.googleusercontent\.com\/./i.test(img.src) == false) {
-			console.debug("thumb is not an updateable image");
+		let size = this.thumbSizeNeeded();
+		if(!size[0] || !size[1]) {
+			console.debug("thumb update skipped since size is not valid");
 			return;
 		}
-		let size = this.thumbSizeNeeded();
 		if(size == [img.naturalWidth, img.naturalHeight]) {
 			console.debug("thumb is already the optimal resolution of %dx%d", size[0], size[1]);
 			return;
 		}
-
+		if(/^https:\/\/[^/]*\.googleusercontent\.com\/./i.test(img.src) == false) {
+			console.debug("thumb is not an updateable image");
+			return;
+		}
 		img.src = img.src.replace(/(=[^=]*)?$/, `=w${size[0]}-h${size[1]}-l93-rj`);
 		console.info("thumb updated to resolution %dx%d", size[0], size[1]);
 	}
