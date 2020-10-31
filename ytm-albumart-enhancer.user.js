@@ -16,6 +16,7 @@ class ArtEnhancer {
 		this.nodes_changed = this.nodes_changed.bind(this);
 		this.player_load = this.player_load.bind(this);
 		this.thumb_load = this.thumb_load.bind(this);
+		this.fs_change = this.fs_change.bind(this);
 		this.dpi_change = this.dpi_change.bind(this);
 		this.size_change = this.size_change.bind(this);
 		this.updateImage = this.updateImage.bind(this);
@@ -30,6 +31,7 @@ class ArtEnhancer {
 		this.observer.observe(this.songThumb, {attributeFilter: ['loaded']});
 		this.highDPIQuery.addEventListener('change', this.dpi_change);
 		window.addEventListener('resize', this.window_resized);
+		document.addEventListener('fullscreenchange', this.fs_change);
 
 		console.info("Art Enhancer started");
 	}
@@ -60,9 +62,12 @@ class ArtEnhancer {
 		if(!this.songThumb.attributes.loaded)
 			return;
 		console.debug("new thumb");
-		if(this.pendingUpdate)
-			clearTimeout(this.pendingUpdate);
-		this.updateImage();
+		this.immediateUpdate();
+	}
+
+	fs_change() {
+		console.debug("fullscreen change");
+		this.immediateUpdate();
 	}
 
 	dpi_change() {
@@ -108,6 +113,12 @@ class ArtEnhancer {
 		if(this.pendingUpdate)
 			clearTimeout(this.pendingUpdate);
 		this.pendingUpdate = setTimeout(this.updateImage, 500);
+	}
+
+	immediateUpdate() {
+		if(this.pendingUpdate)
+			clearTimeout(this.pendingUpdate);
+		this.updateImage();
 	}
 
 	thumbSizeNeeded() {
